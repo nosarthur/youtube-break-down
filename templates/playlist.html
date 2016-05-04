@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+    <head>
+    <title> Youtube Channel Breakdown </title>
+    <link rel='stylesheet' href='{{ url_for('static',
+        filename='style.css') }}'>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+        <script type="text/javascript"> 
+        $(document).ready(function(){
+            $(".button").click(function() {
+            $("#playvideo").html(play(  $(this).find("a").attr("linkattr")));           
+            return false; 
+            });
+        });
+        function play(id)   {
+        var html  = '';     
+        html += '<iframe width="671" height="495" src="'+id+'" frameborder="0" allowfullscreen></iframe>';
+        return html;
+        };  
+        </script>
+    </head>
+
+    <body>
+
+<div id='playvideo'>
+<iframe width="671" height="495"
+src="http://www.youtube.com/embed/{{playlist[0][1]}}">
+</iframe>
+</div>
+
+{{ topic }} {{ playlist |length }}
+<div>
+    {% for x in playlist %}
+    <li class='button'><a linkattr="http://www.youtube.com/embed/{{x[1]}}?autoplay=1" href='#'>{{ x[0] }}</a> </li>
+    {% endfor %}
+</div>
+
+    </body>
+</html>
+ 
+
+
+
+

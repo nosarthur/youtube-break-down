@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+    <head>
+    <title> Youtube Channel Breakdown </title>
+    <link rel='stylesheet' href='{{ url_for('static',
+        filename='style.css') }}'>
+    </head>
+
+    <body>
+    {% from '_helpers.html' import render_field %}
+
+    <div> what's the name of the channel? </div>
+    <form method=post action='/'>
+        <dl>
+        {{ render_field(form.channel_title ) }}
+        </dl>
+        <input type=submit value='analyze'>
+    </form>
+
+    </body>
+</html>

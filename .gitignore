@@ -1,0 +1,5 @@
+channels
+static
+*.pyc
+
+test.db
