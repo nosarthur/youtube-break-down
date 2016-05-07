@@ -18,44 +18,39 @@
         last video in database: {{ channel['latest']  }} 
       </div>
       <div class='col-md-6'> # of videos : {{ channel['v_num'] }} <br>
-        <div id='button' class='col-md-3'>
         <form action='/results' method=post>
         <input type='submit' value='update' name='submit_btn'>
         </form>
-        </div>
-        <div id='button' class='col-md-3'>
             <form action='/clear'>
             <input type='submit' value='go back'>
             </form>
-        </div>
       </div>
     </div>
     <div class="row">
       <div class='col-md-8'>
         <img class="img-responsive" src="{{url_for('static', filename=channel['wordcloud'])}}" alt="{{channel['title']}}">
       </div>
-      <div class='col-md-4'> extra stop words: 
+      <div class='col-md-4'> <p> extra stop words: 
           {% if  'stopwords' in channel %}
                 {{ channel['stopwords'] }}
           {% endif %}
+          </p>
         <form method=post action='/results' >
         {{ render_field(form.stopwords) }}
-        <input type='submit' value='add stopwords' name='submit_btn'>
+        <input type='submit' value='add stopwords & do LDA' name='submit_btn'>
         </form>
       </div>
     </div>
     <div class='row'>
       <div class='col-md-9'>
-      <ul> {{ channel['topic_num'] }} topics with LDA: 
+       <p> {{ channel['topic_num'] }} topics with LDA: </p>
             {% for x in channel['topics'] %} 
-        <li> {{ x[1] }}  
 
-        <form action='/playlist' target="_blank">
-        <input type='submit' value='{{loop.index0}}' name='playlist'>
+        <p> <form id='playlistForm' action='/playlist' target="_blank">
+         <input type='submit' value='{{loop.index0}}' name='playlist'>
         </form>
-        </li>
+         {{ x[1] }}  </p>
             {% endfor %}
-      </ul>
       </div>
       <div class='col-md-3'>
       </div>

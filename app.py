@@ -34,7 +34,6 @@ def index():
 
 @app.route('/clear')
 def clear():
-    print 'clear'
     if session.has_key('tempdir'):
         shutil.rmtree(session['tempdir'])
     session.clear()
@@ -44,11 +43,10 @@ def clear():
 def results():
     if request.method == 'POST' and \
                 request.form['submit_btn'] == 'update':
-        print 'update'
         if update_channel(session['channel']):
             analyze_videos(session['channel'], wordcloud=True)
     if request.method == 'POST' and \
-                request.form['submit_btn'] == 'add stopwords':
+          request.form['submit_btn'] == 'add stopwords & do LDA':
         form = StopwordsForm(request.form)
         if form.validate():
             session['channel']['stopwords'] = request.form['stopwords']
@@ -71,7 +69,7 @@ def playlist():
     infile = open(session['channel']['tempdir'] + '/filename', 'rb')
     playlists = pickle.load(infile)
     infile.close()
-    print len(playlists[index])
+    print 'num of videos in playlist ', len(playlists[index])
     return render_template('playlist.html',
                             playlist=playlists[index],
                  topic=session['channel']['topics'][index][1])

@@ -18,6 +18,9 @@ from apiclient.discovery import build
 from functools import partial
 import tempfile
 import pickle
+import datetime
+import rfc3339      # for date object -> date string
+import iso8601      # for date string -> date object
 
 import sqlite3
 SQLKEYS = ['videoId','publishedAt','channelTitle','title']
@@ -51,6 +54,7 @@ def analyze_videos(channel, wordcloud=False, LDA=False):
         make_wordcloud(channel['wordcloud'], titles)
     
     if LDA:
+        print 'LDA channel number: ', channel['topic_num']
         channel['topics'], lda_corpus = do_LDA(titles,
                                     channel['topic_num'])
         title_videoid = [(v['title'],v['videoId']) 
@@ -74,15 +78,30 @@ def do_LDA(titles,num_topics):
     # assign topics
     lda_corpus = [max(x,key=lambda y:y[1]) 
                         for x in ldamodel[corpus] ]
-    return ldamodel.show_topics(num_words=4), lda_corpus
+    return ldamodel.show_topics(num_topics=num_topics,
+                                num_words=4), lda_corpus
 
-def simplify_lib(fullLib):
-    simplify_results = lambda video: {
-        'title': video['snippet']['title'],
-        'videoId': video['snippet']['resourceId']['videoId'], 
-        'publishedAt': video['snippet']['publishedAt'],
-        'channelTitle': video['snippet']['channelTitle']
-                        }
+def simplify_lib(fullLib, update=False):
+    ''' for some unknown reason, using Youtube api v3
+        with search.list does not give all videos,
+        thus playlistitem.list is used to download
+        videos if the channel is queried the 1st time
+    '''
+    if update:
+        simplify_results = lambda video: {
+            'title': video['snippet']['title'],
+            'videoId': video['id']['videoId'], 
+            'publishedAt': video['snippet']['publishedAt'],
+            'channelTitle': video['snippet']['channelTitle']
+            }
+    else:
+        simplify_results = lambda video: {
+            'title': video['snippet']['title'],
+            'videoId': video['snippet']['resourceId']['videoId'], 
+            'publishedAt': video['snippet']['publishedAt'],
+            'channelTitle': video['snippet']['channelTitle']
+            }
+
     videoLib = map(simplify_results, fullLib)
 
     # update the database
@@ -137,6 +156,7 @@ def load_channel(name):
     c = conn.execute('SELECT * FROM videos WHERE \
                 channelTitle = ?',(name,))
     data = c.fetchall()
+    global SQLKEYS
     return [dict(zip(SQLKEYS,x)) for x in data]
     
 def get_last_video(channelname):
@@ -146,7 +166,12 @@ def get_last_video(channelname):
                     ORDER BY publishedAt DESC LIMIT 1',\
                     (channelname,))
     data = c.fetchall()[0]
+    global SQLKEYS
     return dict(zip(SQLKEYS,data)) 
+
+def delay1s(t):
+    tt = iso8601.parse_date(t) + datetime.timedelta(seconds=1)
+    return rfc3339.rfc3339(tt)
 
 def update_channel(channel):
     old = get_last_video(channel['title'])
@@ -155,18 +180,22 @@ def update_channel(channel):
                 part = "contentDetails",
                 forUsername = channel['title']
                 ).execute()
-    all_uploads = results["items"][0]["contentDetails"]\
-                    ["relatedPlaylists"]["uploads"]
-    print all_uploads
-    print old
-    results = youtube.playlistItems().list(
-        part = "snippet",
-        playlistId = all_uploads,
-        videoId = old['videoId'],
-        maxResults = 50
-        ).execute()
- 
-    return True
+    channelId = results['items'][0]['id']
+    results = youtube.search().list(
+                type = 'video',
+                part = 'snippet',
+                channelId = channelId, 
+                maxResults=50,
+                relevanceLanguage='en',
+                publishedAfter=delay1s(old['publishedAt'])
+                ).execute()
+    videos = results['items']
+
+    print 'update ',len(videos), 'videos', channelId
+    if len(videos):
+        simplify_lib(videos, update=True)
+        return True
+    return False
 
 def make_youtube_api():
     DEVELOPER_KEY = "AIzaSyBd5uFOsFRRZhD5vaDIRYeNIk9cue0FZWY"
@@ -182,7 +211,7 @@ def query_Youtube(channel):
     # check if already in database
     name_dict = get_channel_names()
     print name_dict
-    print channel
+    print 'channel name: ', channel
     namekey = channel['title'].lower() 
     if namekey in name_dict.keys():
         channel['title'] = name_dict[namekey]
@@ -205,8 +234,10 @@ def query_Youtube(channel):
         return False
 
     # retrieve all information of all videos
+    # note channelId is the same as playlist:uploads
     all_uploads = results["items"][0]["contentDetails"]\
                     ["relatedPlaylists"]["uploads"]
+
     results = youtube.playlistItems().list(
         part = "snippet",
         playlistId = all_uploads,
@@ -215,18 +246,21 @@ def query_Youtube(channel):
     videoLib = results['items'] 
     while ('nextPageToken' in results):
         results = youtube.playlistItems().list(
-            part = "snippet",
-            playlistId = all_uploads,
-            pageToken = results['nextPageToken'],
-            maxResults = 50
+                part = "snippet",
+                playlistId = all_uploads,
+                pageToken = results['nextPageToken'],
+                maxResults = 50
         ).execute()
         videoLib += results['items']
 
-    # save video information
     channel['title'] = videoLib[0]['snippet']['channelTitle']
+
+    # save video information
+    '''
     print channel['title'], 'before save'
-    with open('channels'+channel['title']+'.json', 'w') as outfile:
+    with open('channels/'+channel['title']+'.json', 'w') as outfile:
         json.dump(videoLib, outfile)
+    '''
 
     simplify_lib(videoLib)
     return True
