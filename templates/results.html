@@ -1,15 +1,7 @@
-<!doctype html>
-<html>
-  <head>
-    <title> Youtube Channel Breakdown </title>
-    <link rel='stylesheet' href='{{ url_for('static',
-        filename='bootstrap.min.css') }}'>
-    <link rel='stylesheet' href='{{ url_for('static',
-        filename='style.css') }}'>
-  </head>
+{% extends 'base.html' %}
+{% block content %}
 
-  <body>
-    {% from '_helpers.html' import render_field %}
+{% from '_helpers.html' import render_field %}
 
 
   <div class="container">
@@ -42,7 +34,7 @@
       </div>
     </div>
     <div class='row'>
-      <div class='col-md-9'>
+      <div class='col-md-8'>
        <p> {{ channel['topic_num'] }} topics with LDA: </p>
             {% for x in channel['topics'] %} 
 
@@ -52,10 +44,30 @@
          {{ x[1] }}  </p>
             {% endfor %}
       </div>
-      <div class='col-md-3'>
+      <div class='col-md-4'>
+    <svg style="width:300px; height:300px; border:1px lightgray solid;">
+
+    </svg>   
+    <div id='hello'></div>
+
       </div>
     </div>
   </div>
 
-  </body>
-</html>
+
+<script>
+d3.select('#hello')
+    .append('text')
+    .text('hello');
+d3.select("svg")
+  .append("text")
+  .attr({"x": 20, "y": 20})
+  .text("HELLO");
+d3.select("svg")
+  .append("circle")
+  .attr({"r": 20, "cx": 20, "cy": 80})
+  .style("fill","purple");
+</script>
+
+
+{% endblock %}

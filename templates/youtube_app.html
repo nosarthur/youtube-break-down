@@ -1,15 +1,9 @@
-<!doctype html>
-<html>
-    <head>
-    <title> Youtube Channel Breakdown </title>
-    <link rel='stylesheet' href='{{ url_for('static',
-        filename='style.css') }}'>
-    </head>
+{% extends 'base.html' %}
+{% block content %}
+{% from '_helpers.html' import render_field %}
 
-    <body>
-    {% from '_helpers.html' import render_field %}
-
-    <div> what's the name of the channel? </div>
+    <div class='container'> 
+    <div class='row'>what's the name of the channel? </div>
     <form method=post action='/'>
         <dl>
         {{ render_field(form.channel_title ) }}
@@ -17,5 +11,5 @@
         <input type=submit value='analyze'>
     </form>
 
-    </body>
-</html>
+    </div>
+{% endblock %}
