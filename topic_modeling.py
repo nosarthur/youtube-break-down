@@ -8,7 +8,7 @@ porter = PorterStemmer()
 from nltk.corpus import stopwords
 stop = set(stopwords.words('english'))
 
-from collections import Counter, defaultdict
+from collections import Counter
 import json
 import re
 import matplotlib.pyplot as plt
@@ -198,7 +198,8 @@ def update_channel(channel):
     return False
 
 def make_youtube_api():
-    DEVELOPER_KEY = "AIzaSyBd5uFOsFRRZhD5vaDIRYeNIk9cue0FZWY"
+    with open ('my_key', 'r') as fin:
+        DEVELOPER_KEY = fin.read().replace('\n', '')
     YOUTUBE_API_SERVICE_NAME = "youtube"
     YOUTUBE_API_VERSION = "v3"
 

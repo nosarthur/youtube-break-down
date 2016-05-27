@@ -3,3 +3,4 @@ static
 *.pyc
 
 test.db
+my_key

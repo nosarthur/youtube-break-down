@@ -1,6 +1,9 @@
+# Youtube channel breakdown
 
-Youtube channel breakdown: a web application that analyzes youtube channel content and topics.
+A web application that analyzes youtube channel content and does topics modeling using gensim.
 
+## Authors
+* **Dong Zhou** - *Initial work* - [nosarthur](https://github.com/nosarthur)
 
-writteb by Dong Zhou
-zhou.dong@gmail.com
+## License
+This project is licensed under the MIT License.
